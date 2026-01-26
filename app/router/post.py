@@ -46,7 +46,7 @@ def create_posts(post: schemas.PostCreate, db:Session=Depends(get_db), current_u
 
     # to make it more efficient
     print(current_user.id)
-    new_post = models.Post(**post.dict(), owner_id=current_user.id)
+    new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)

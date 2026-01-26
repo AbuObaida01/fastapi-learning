@@ -21,7 +21,6 @@ class Post(Base):
     content: Mapped[str]=mapped_column(String, nullable=False)
     published: Mapped[bool]=mapped_column(Boolean, server_default='TRUE')
     created_at: Mapped[TIMESTAMP]=mapped_column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))
-
 class User(Base):
     __tablename__='users'
     id: Mapped[int]=mapped_column(Integer, primary_key=True, nullable=False)
