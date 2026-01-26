@@ -4,7 +4,7 @@ from ..database import engine, SessionLocal, get_db
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from typing import Optional, List
-
+from .. import oauth2
 router=APIRouter(
     prefix="/posts",
     tags=['Posts']
@@ -29,7 +29,7 @@ async def get_posts(db:Session=Depends(get_db)):
 
 # TO create posts
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.ResponsePost)
-async def create_posts(post: schemas.PostCreate, db:Session=Depends(get_db)):
+def create_posts(post: schemas.PostCreate, db:Session=Depends(get_db), current_user : int  =Depends(oauth2.get_current_user)):
     # cursor.execute(f"INSERT INTO posts(title,content,published) VALUES ({post.title}, {post.content}, {post.published})")
     
     # # This is the method to prevent SQL Injection that is caused by the above code
@@ -45,8 +45,8 @@ async def create_posts(post: schemas.PostCreate, db:Session=Depends(get_db)):
     # return{"data":new_post}
 
     # to make it more efficient
-
-    new_post = models.Post(**post.dict())
+    print(current_user.id)
+    new_post = models.Post(**post.dict(), owner_id=current_user.id)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
