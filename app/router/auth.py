@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 router=APIRouter(tags=["Authentication"])
 
-@router.post("/login")
+@router.post("/login", response_model=schemas.Token)
 def get_login(user_credentials: OAuth2PasswordRequestForm=Depends(), db: Session=Depends(database.get_db)):
     stmt=select(models.User).where(models.User.email==user_credentials.username)
     user=db.execute(stmt).scalar_one_or_none()

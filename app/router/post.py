@@ -11,7 +11,7 @@ router=APIRouter(
 )
 
 @router.get("/",response_model=List[schemas.ResponsePost])
-async def get_posts(db:Session=Depends(get_db)):
+async def get_posts(db:Session=Depends(get_db), current_user : int  =Depends(oauth2.get_current_user)):
     # cursor.execute("""SELECT * from posts""")
     # my_posts = cursor.fetchall()
     # print(my_posts)
@@ -46,7 +46,7 @@ def create_posts(post: schemas.PostCreate, db:Session=Depends(get_db), current_u
 
     # to make it more efficient
     print(current_user.id)
-    new_post = models.Post(**post.dict())
+    new_post = models.Post(owner_id=current_user.id, **post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -97,7 +97,7 @@ async def get_post(id: int, db:Session=Depends(get_db)):
 
 # to delete a post
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_post(id:int, db:Session=Depends(get_db)):
+async def delete_post(id:int, db:Session=Depends(get_db), current_user : int  =Depends(oauth2.get_current_user)):
     # cursor.execute("""DELETE FROM posts WHERE id=%s RETURNING *""", (str(id),))
     # del_post=cursor.fetchone()
     # conn.commit()
@@ -116,7 +116,7 @@ async def delete_post(id:int, db:Session=Depends(get_db)):
 
 # to update a post
 @router.put("/{id}",response_model=schemas.ResponsePost)
-async def update_post(id:int, post:schemas.PostCreate, db:Session=Depends(get_db)):
+async def update_post(id:int, post:schemas.PostCreate, db:Session=Depends(get_db), current_user : int  =Depends(oauth2.get_current_user)):
     # index=del_post(id)
     # cursor.execute("""UPDATE posts SET title=%s, content=%s, published=%s WHERE id=%s RETURNING *""", (post.title, post.content
     # ,post.published, str(id),))

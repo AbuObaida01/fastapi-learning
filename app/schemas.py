@@ -14,6 +14,7 @@ class PostCreate(PostBase):
 class ResponsePost(PostBase):
     # created_at: datetime
     id: int
+    owner_id: int
 
     model_config=ConfigDict(from_attributes=True)
 

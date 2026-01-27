@@ -13,7 +13,8 @@ load_dotenv()
 oauth2_scheme=OAuth2PasswordBearer(tokenUrl='login')
 SECRET_KEY=os.getenv("SECRET_KEY")
 ALGORITHM=os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+
 
 if SECRET_KEY is None:
     raise ValueError("SECRET_KEY is not set in environment variables")
@@ -47,9 +48,6 @@ def get_current_user(
 
     token_data = verify_access_token(token, credentials_exception)
 
-    user = db.get(models.User, token_data.id)
-
-    if user is None:
-        raise credentials_exception
+    user = db.query(models.User).filter(models.User.id==token_data.id).first() 
 
     return user
