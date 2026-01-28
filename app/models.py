@@ -1,6 +1,6 @@
 from .database import Base
 from sqlalchemy import TIMESTAMP, Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column;
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 
@@ -22,6 +22,7 @@ class Post(Base):
     published: Mapped[bool]=mapped_column(Boolean, server_default='TRUE')
     created_at: Mapped[TIMESTAMP]=mapped_column(TIMESTAMP(timezone=True),nullable=False, server_default=text('now()'))
     owner_id: Mapped[int]=mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    owner=relationship("User")
 
 class User(Base):
     __tablename__='users'

@@ -11,11 +11,12 @@ router=APIRouter(
 )
 
 @router.get("/",response_model=List[schemas.ResponsePost])
-async def get_posts(db:Session=Depends(get_db), current_user : int  =Depends(oauth2.get_current_user)):
+async def get_posts(db:Session=Depends(get_db), current_user : int  =Depends(oauth2.get_current_user),limit: int=10, skip: int=0,
+                    search: Optional[str]=""):
     # cursor.execute("""SELECT * from posts""")
     # my_posts = cursor.fetchall()
     # print(my_posts)
-    stmt=select(models.Post)
+    stmt=select(models.Post).limit(limit).offset(skip).where(models.Post.title.contains(search))  # .where(models.Post.owner_id==current_user.id) we can add this to get post only from my id
     my_posts=db.execute(stmt).scalars().all()
 
     # my_posts = db.query(models.Post).all()
@@ -45,7 +46,6 @@ def create_posts(post: schemas.PostCreate, db:Session=Depends(get_db), current_u
     # return{"data":new_post}
 
     # to make it more efficient
-    print(current_user.id)
     new_post = models.Post(owner_id=current_user.id, **post.dict())
     db.add(new_post)
     db.commit()
@@ -65,7 +65,7 @@ def create_posts(post: schemas.PostCreate, db:Session=Depends(get_db), current_u
 
 # To retrive any specific post by id
 @router.get("/{id}", response_model=schemas.ResponsePost)
-async def get_post(id: int, db:Session=Depends(get_db)):
+async def get_post(id: int, db:Session=Depends(get_db), current_user :int=Depends(oauth2.get_current_user)):
     # cursor.execute("""SELECT * FROM posts WHERE id=%s """, (str(id),) )
     # post=cursor.fetchone()
    
@@ -110,6 +110,8 @@ async def delete_post(id:int, db:Session=Depends(get_db), current_user : int  =D
     if del_post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post {id} not found")
     # my_posts.pop(index)
+    if del_post.owner_id!= current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can not delete others post")
     db.delete(del_post)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -133,6 +135,9 @@ async def update_post(id:int, post:schemas.PostCreate, db:Session=Depends(get_db
     
     if updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post {id} not found")
+    
+    if updated.owner_id!= current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Can not update others post")
     # post_dict=post.dict()
     # post_dict['id']=id
     # my_posts[index]=post_dict
